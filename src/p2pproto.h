@@ -4,15 +4,15 @@
 
 /* Only put functions for creating and reading messages here */
 
-
-
 #include "p2pframe.h"
 
-#define P2P_MSG_HEARTBEAT /* Keep alive */
-#define P2P_MSG_FTP /* Transferring trusted and untrusted files around to the computer or to the client's ~/.p2p */
-#define P2P_MSG_WHO /* Typically broadcasted in search of other computers on the net. Others respond with their ID  */
-#define P2P_MSG_ID /* Used to send the keys/identification info back to another computer */
-#define P2P_MSG_
+#define P2P_MSG_HEARTBEAT 1 /* Keep alive */
+#define P2P_MSG_FTP 2 /* Transferring trusted and untrusted files around to the computer or to the client's ~/.p2p */
+#define P2P_MSG_WHO 3 /* Typically broadcasted in search of other computers on the net. Others respond with their ID  */
+#define P2P_MSG_ID 4 /* Used to send the keys/identification info back to another computer */
+#define P2P_MSG_ACK 5 /* Acknowledge message sent back by the server for every received request that does not have data associated with the response */
+#define P2P_MSG_DATA 6 /* For generic data transfers */
+
 
 typedef struct {
 	char magic[4];
@@ -33,8 +33,7 @@ typedef struct {
 	 *
 	 * A completely null address will indicate a broadcast message
 	 * */
-	/* TODO: Send a smaller abbreviated structure */
-	uid_t destination;
+	uuid_t destination;
 
 } p2pheader;
 
@@ -45,8 +44,8 @@ typedef struct {
 	char payload[];
 } p2pmsg;
 
-/* TODO: this prototype needs some work */
-int p2pmsg_create(p2pmsg *msg, int class, int type, p2pnode *dst);
+/* Populates an p2pheader structure with data so that it is ready to send as a header before any data */
+int p2phdr_create(p2pheader *hdr, int class, int type, p2pnode *dst, int length);
 
 
 #endif /* P2PPROTO_H_ */

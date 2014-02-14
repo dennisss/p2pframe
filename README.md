@@ -10,6 +10,13 @@ This is a framework for developing multi-computer terminal based applications. S
 * Common Application Layer protocol for sending network messages
 * Synchronization of application files/binaries to all participating computers
 
+Running/Building
+----------------
+* "make" will build shared code (p2pclient.c, p2pserver.c, p2pstate.c, p2pproto.c etc) to "bin/libp2pframe.a". It will also generate the main framework executable "bin/p2pframe" from its entry point in "p2pframe.c"
+
+* "make bin/*" will build test code in "tests/%.c" and put it into "bin"
+
+* "make bin/testapp" will build an included test that simply uses p2pserver/p2pclient to send data to itself in order to make sure that the code works
 
 (Proposed) Technical Details
 ----------------------------
@@ -25,7 +32,7 @@ This is a framework for developing multi-computer terminal based applications. S
 2. When requested by either the CLI or the server, the framework will spawn a new process of an application binary
 	- The application will first attach to the shared memory in the framework containing the p2pstate. This will allow it to query the network.
 	- The application will be passed in a local port assigned by the framework and will use a p2pserver to listen on this port.
-	- The framework will send the port number of the local application server to any clients that are connected, and clients will send the port of their local application back as well.
+	- The framework will send the port number of the local application server to any clients that are connected, and clients will send the port of their local application back as well. NOTE: For simplicity both computers will be listening on a random agreed upon port
 	- Finally the applications will p2pclients that connect to the other client's ports (which were send over in the previous step) and the application will run!
 
 3. The framework and application will continue to run more or less independently, and the framework will wait for step 1 to happen again

@@ -1,0 +1,10 @@
+TODO List
+---------
+
+Implement code for discovering other computers on the network
+
+Add an API for apps to wait for connections from other computers and know when the root server has received a connection request for them
+
+Add a terminal interface for the p2pframe binary
+
+Allow multiple p2pserver's to exist in one process
