@@ -28,8 +28,6 @@ int p2pclient_send(p2pclient *c, p2pnode *node, char *msg, int lenmsg, char **re
 
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_port = htons(p2pstate_getapp(c->state)->port);
-
-
 	addr.sin_family = AF_INET;
 	addr.sin_addr = node->gateway;
 
@@ -40,8 +38,6 @@ int p2pclient_send(p2pclient *c, p2pnode *node, char *msg, int lenmsg, char **re
 
 	/* Send main message */
 	r = send(sock, msg, lenmsg, NULL);
-
-
 
 	/* Wait for a response */
 	if(response != NULL){

@@ -8,6 +8,10 @@
 
 typedef void (*P2PRECEIVER) (char *msg, int len, int type);
 
+/* Used for instantiating special servers/clients */
+#define P2P_TCP 1
+#define P2P_UDP 2
+
 /**
  * A p2pserver binds to a local port and waits for requests.
  *
@@ -30,6 +34,7 @@ typedef struct{
 
 } p2pserver;
 
+
 /**
  *  Initializes a p2pserver instance
  *
@@ -45,6 +50,7 @@ int p2pserv_init(p2pserver *serv, p2pstate *state, /*int port,*/ P2PRECEIVER rcv
  * Starts the listening server in a new thread under the calling process
  */
 int p2pserv_start(p2pserver *serv);
+int p2pserv_start2(p2pserver *serv, int proto);
 int p2pserv_stop(p2pserver *serv);
 int p2pserv_clean(p2pserver *serv);
 

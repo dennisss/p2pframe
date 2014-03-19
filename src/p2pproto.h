@@ -9,10 +9,11 @@
 #define P2P_MSG_HEARTBEAT 1 /* Keep alive */
 #define P2P_MSG_FTP 2 /* Transferring trusted and untrusted files around to the computer or to the client's ~/.p2p */
 #define P2P_MSG_WHO 3 /* Typically broadcasted in search of other computers on the net. Others respond with their ID  */
-#define P2P_MSG_ID 4 /* Used to send the keys/identification info back to another computer */
+#define P2P_MSG_ID 4 /* Used to send the keys/identification info back to another computer (This is sent a response to a broadcast) */
 #define P2P_MSG_ACK 5 /* Acknowledge message sent back by the server for every received request that does not have data associated with the response */
 #define P2P_MSG_DATA 6 /* For generic data transfers */
-
+#define P2P_MSG_CONNECT 7
+#define P2P_MSG_QUERY 8
 
 typedef struct {
 	char magic[4];

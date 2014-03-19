@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
+#include <pthread.h>
+
 //TODO: This block can be removed
 #ifndef bool
 typedef int bool;
@@ -17,7 +19,7 @@ typedef int bool;
 #define false 0
 #endif
 
-#define NAME_LENGTH 256
+#define NAME_LENGTH 128
 
 /* The port on which the main server will listen */
 #define ROOT_PORT 1234
@@ -73,6 +75,10 @@ typedef struct {
 	 */
 	pid_t pid;
 
+
+	/* USed primarily by onconnection()/waitforconnection() to tell the application when a new connection has been established */
+	//mqd_t msgqueue;
+
 	/* The number of elements that are used in connections */
 	int nconnections;
 
@@ -108,13 +114,36 @@ typedef struct {
 /* Generate the entry for a new app, and return the index. NOTE: The root framework will have index zero */
 int p2pstate_newapp(p2pstate *s, char *name);
 
+
+
+/* Should be called before execve() when trying to start a child application so that any connections are allocated  */
+//void p2pstate_prepapp(p2pstate *s, p2pnode *connections /* TODO: Change this */);
+
+
+
+/* TODO: Replace this with a macro called something like "APP" */
 /* Returns the pointer to the calling app, or NULL on failure */
+/* TODO: The framework may preload connections into app array, so it is important that only one one of these runs at a time */
+/* TODO: Or the array entry can be preloaded after fork() but before execve() so that the data is alloted to the proper process id */
 p2papp *p2pstate_getapp(p2pstate *s);
+/* Returns the index of the current app or -1 on failure */
+int p2pstate_getappid(p2pstate *s);
+
+/* TODO: Should this be cached so that hostfullness is preserved or should every application loop through the connections to try to connect, only after that would it turn to host mode */
+/* Checks to see if any connections have been registered to the app, if none, then the app has started in host mode, else it should contact that host to know whats up */
+bool p2pstate_ishost();
 
 /* Attempt to remove the app entry, this will only succeed if the associated pid is exited */
 bool p2pstate_removeapp(p2pstate *s, int app);
 
-void p2pstate_addnode(p2pstate *s, p2pnode *n);
+void p2p_waitforconnection(p2pstate *s);
+void p2p_onconnection(p2pstate* s, void (*onconnect)(int node));
+
+/* Adds a connection to a given node on an app */
+int p2pstate_addconnection(p2pstate *s, int app, int n);
+
+/* Add and remove computers/nodes for the network */
+int p2pstate_addnode(p2pstate *s, p2pnode *n);
 void p2pstate_removenode(p2pstate *s, p2pnode *n);
 
 /*

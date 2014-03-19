@@ -22,13 +22,14 @@ void receivemsg(char *msg, int lenmsg)
 
 int main(int argc, char *argv[])
 {
-	if(p2pinit(&state, true /* For actual sub-applications this will be false, but for testing it as a standalone, it should be true */) != 0){
+	if(p2pinit(&state, false /* For actual sub-applications this will be false, but for testing it as a standalone, it should be true */) != 0){
 		printf("Failed to initialize p2p state\n");
 		exit(1);
 	}
 
 
 	int app = p2pstate_newapp(state, "Test App");
+
 
 	if(p2pserv_init(&serv, state, receivemsg) != 0){
 		printf("Failed to initialize p2p server\n");

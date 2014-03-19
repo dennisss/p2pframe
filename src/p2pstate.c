@@ -52,13 +52,15 @@ int p2pinit(p2pstate **state, bool new)
 		/* Establish self identity */
 		if(ftell(file) != 0){ /* Data already exists in file, rewind and read identity */
 			rewind(file);
-			if(fread(&(*state)->self, sizeof(p2pnode), 1, file) != sizeof(p2pnode)){
-				/* Failed to read entire identity. Corrupt? Maybe regenerate it */
+			if(fread(&(*state)->self, 1, sizeof(p2pnode), file) != sizeof(p2pnode)){
+				/* Failed to read entire identity. Corrupt? TODO: Maybe regenerate it */
+
+				printf("Invalid id file found\n");
 			}
 		}
 		else{ /* Create a new identity and write it to the file */
 			inet_aton("127.0.0.1", &(*state)->self.gateway.s_addr);
-			strcpy((*state)->self.name, "Some name from the user"); //TODO: Have the name as a parameter or something
+			strncpy((*state)->self.name, "Computer", NAME_LENGTH); //TODO: Have the name as a parameter or something
 			generateuuid(&(*state)->self.uuid);
 			fwrite(&(*state)->self, sizeof(p2pnode), 1, file);
 		}
@@ -83,6 +85,7 @@ int hashname(char *name)
 	while(*name != 0){
 		val += (*name) * i;
 		i++;
+		name++;
 	}
 
 	return val;
@@ -90,32 +93,54 @@ int hashname(char *name)
 
 int p2pstate_newapp(p2pstate *s, char *name)
 {
-	int i = s->napps++;
+	int i;
 
-	strcpy(&s->apps[i].name, name);
+	/* Check if it exists first */
+	i = p2pstate_getappid(s);
 
-	s->apps[i].nconnections = 0;
-	s->apps[i].pid = getpid();
+	if(i == -1){
+		i = s->napps++;
 
-	if(i == 0) /* The first app will always be the root server */
+		s->napps += 1;
+		s->napps -= 1;
+
+		s->apps[i].nconnections = 0;
+		s->apps[i].pid = getpid();
+	}
+
+	strncpy(s->apps[i].name, name, NAME_LENGTH);
+
+	if(i == 0){ /* The first app will always be the root server */
 		s->apps[i].port = ROOT_PORT;
-	else
-		s->apps[i].port = 2048 + (hashname(name) % 20000); /* Get a port in the range 2048 - 22048 (this port range has no particular meaning) */
+	}
+	else{
+		s->apps[i].port =  2048 + (hashname(name) % 20000); /* Get a port in the range 2048 - 22048 (this port range has no particular meaning) */
+	}
+
 
 	return i;
 }
 
 
-p2papp* p2pstate_getapp(p2pstate *s)
+int p2pstate_getappid(p2pstate *s)
 {
 	int x;
 	pid_t thread = getpid();
 	for(x = 0; x < s->napps; x++){
 		if(s->apps[x].pid == thread)
-			return &s->apps[x];
+			return x;
 	}
 
-	return NULL;
+	return -1;
+}
+
+p2papp* p2pstate_getapp(p2pstate *s)
+{
+	int x = p2pstate_getappid(s);
+	if(x == -1)
+		return NULL;
+
+	return &s->apps[x];
 }
 
 
@@ -125,5 +150,20 @@ void generateuuid(uuid_t *buffer)
 	for(x = 0; x < sizeof(uuid_t); x++){
 		buffer->vals[x] = (char)rand();
 	}
+}
 
+
+
+int p2pstate_addnode(p2pstate *s, p2pnode *n)
+{
+	int i = s->nnodes++;
+	s->nodes[i] = *n;
+	return i;
+}
+
+int p2pstate_addconnection(p2pstate *s, int app, int n)
+{
+	int i = s->apps[app].nconnections++;
+	s->apps[app].connections[i] = n;
+	return i;
 }

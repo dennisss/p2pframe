@@ -18,6 +18,8 @@ Running/Building
 
 * "make bin/testapp" will build an included test that simply uses p2pserver/p2pclient to send data to itself in order to make sure that the code works
 
+* "make bin/testchat" will build a test app that can be used with the framework to do simple chat between a client and server computer. Note: both ends of the program must be running on different computers with different IPs
+
 (Proposed) Technical Details
 ----------------------------
 
@@ -29,6 +31,7 @@ Running/Building
 	- a p2pclient - primarily works for the CLI by doing the work of sending messages.
 	- a p2pbroadcaster - this will be a simple component unique to the root framework. it will run a udp server and client on the root port. it will broadcast messages to ALL LAN computers and see if their udp servers respond with the identify of the node (this will be the primarily way of discovering other users on the network and populating the p2pstate)
 
+TODO: Change this one
 2. When requested by either the CLI or the server, the framework will spawn a new process of an application binary
 	- The application will first attach to the shared memory in the framework containing the p2pstate. This will allow it to query the network.
 	- The application will be passed in a local port assigned by the framework and will use a p2pserver to listen on this port.
