@@ -114,10 +114,12 @@ int p2pserv_start2(p2pserver *serv, int proto)
 		return 1;
 	}
 
+#ifdef SO_REUSEPORT
 	int reuse = 1;
 	if(setsockopt(serv->sock, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) == -1){
 		return 1;
 	}
+#endif
 
 	struct sockaddr_in addr_in;
 	addr_in.sin_family = AF_INET;
