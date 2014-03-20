@@ -8,7 +8,6 @@ This is a framework for developing multi-computer terminal based applications. S
 * Creating/managing networks of computers
 * Establishing/maintaining connections for one or more computers
 * Common Application Layer protocol for sending network messages
-* Synchronization of application files/binaries to all participating computers
 
 Running/Building
 ----------------
@@ -20,7 +19,10 @@ Running/Building
 
 * "make bin/testchat" will build a test app that can be used with the framework to do simple chat between a client and server computer. Note: both ends of the program must be running on different computers with different IPs
 
-(Proposed) Technical Details
+To run execute "bin/p2pframe" on two computers on the same network. Type "list" on either computer to view a list of available other clients
+Enter the name of the executable to be run (usually either bin/testapp or bin/testchat) and then enter the number of the node that should be connected to from "list". If the app should host a session instead of connect, specify a blank node value.
+
+Technical Details
 ----------------------------
 
 1. The framework starts as a standalone executable with entry point in p2pframe.c
@@ -34,10 +36,8 @@ Running/Building
 TODO: Change this one
 2. When requested by either the CLI or the server, the framework will spawn a new process of an application binary
 	- The application will first attach to the shared memory in the framework containing the p2pstate. This will allow it to query the network.
-	- The application will be passed in a local port assigned by the framework and will use a p2pserver to listen on this port.
-	- The framework will send the port number of the local application server to any clients that are connected, and clients will send the port of their local application back as well. NOTE: For simplicity both computers will be listening on a random agreed upon port
-	- Finally the applications will p2pclients that connect to the other client's ports (which were send over in the previous step) and the application will run!
-
+	- The application will wait for a connection, or if the state has a populated connection it will connect to that
+	
 3. The framework and application will continue to run more or less independently, and the framework will wait for step 1 to happen again
 	
 	

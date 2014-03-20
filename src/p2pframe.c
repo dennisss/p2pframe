@@ -89,6 +89,15 @@ void root_receiver(char *msg, int lenmsg, int type, int sender)
 
 		p2pnode *n = (p2pnode *)msg;
 
+		strcpy(&state->nodes[sender].name, &n->name);
+
+
+		char *m = "hello";
+		/* For now this will just send a blank message back to the other client so that it knows that we exist */
+		p2pclient_send(&rootclient, &state->nodes[sender], m,strlen(m),0,0);
+
+
+
 		/* Ignore messages sent by itself */
 		/*if(uuidcmp(&n->uuid, &state->self.uuid) == 0){
 
@@ -100,7 +109,6 @@ void root_receiver(char *msg, int lenmsg, int type, int sender)
 	}
 
 	if(type == P2P_MSG_ID){
-
 
 		/* Store the ID of another server */
 
@@ -136,14 +144,6 @@ int main(int argc, char argv[])
 
 	int app = p2pstate_newapp(state, "p2pframework");
 
-	p2pbroad_init(&broadcaster, state, root_receiver);
-	p2pbroad_start(&broadcaster);
-	//while(1){
-		p2pbroad_send(&broadcaster);
-	//	sleep(1);
-	//}
-	//return 0;
-
 
 	if(p2pserv_init(&rootserver, state, root_receiver) != 0){
 		printf("Failed to initialize p2p server\n");
@@ -156,11 +156,26 @@ int main(int argc, char argv[])
 
 	}
 
+	printf("Name: ");
+	fflush(stdin);
+	fgets(state->self.name, 128, stdin);
+
+	if(state->self.name[strlen(state->self.name) - 1] == '\n')
+		state->self.name[strlen(state->self.name) - 1] = 0;
+
 
 	if(p2pclient_init(&rootclient, state) != 0){
 		printf("Failed to initialize p2p client\n");
 		exit(1);
 	}
+
+	p2pbroad_init(&broadcaster, state, root_receiver);
+	p2pbroad_start(&broadcaster);
+	//while(1){
+		p2pbroad_send(&broadcaster);
+	//	sleep(1);
+	//}
+	//return 0;
 
 
 	printf("Basic framework shell for starting programs\nEnter the name of the executable such as 'bin/testchat'");

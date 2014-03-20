@@ -2,7 +2,7 @@ BUILD_PATH = bin
 #OBJ_PATH = obj
 CC = gcc
 AR = ar
-CFLAGS += -g -fpermissive -pthread
+CFLAGS += -g -w -fpermissive -pthread
 
 libp2pframe_TARGET = bin/libp2pframe.a
 libp2pframe_SRCS = src/p2pserver.o src/p2pclient.o src/p2pstate.o src/p2pproto.o src/p2pbroad.o

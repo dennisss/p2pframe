@@ -17,12 +17,12 @@ void gameLoop();
 void receivemsg(char *msg, int lenmsg, int type, int sender);
 bool connected = false;
 char *temp_msg;
-int senderNodeId = NULL;
+int senderNodeId = -1;
 
 void receivemsg(char *msg, int lenmsg, int type, int sender)
 {
 	printf("sender received - %d\n", sender);
-	if (senderNodeId == NULL)
+	if (senderNodeId == -1)
 		senderNodeId = sender;
 
 	printf("Recv: \n");
@@ -239,6 +239,7 @@ void gameLoop()
 				//Wait for stuff back
 				while(temp_msg==NULL)
 				{
+					sleep(1);
 					//printf(".");
 				}
 				printf("%s", temp_msg);
