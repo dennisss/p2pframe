@@ -66,6 +66,7 @@ void startapp(char *path, bool host, int connection)
 }
 
 /* This can work as the reeiver for both the UDP and TCP servers */
+/* Also for the broadcaster: Listens for friendship requests/pings, stores the identity of the requesting computer as a node and send back the local computer's identity */
 /* TODO: Make sure that all the arguments passed to the receiver are implemented */
 void root_receiver(char *msg, int lenmsg, int type, int sender)
 {
@@ -94,7 +95,7 @@ void root_receiver(char *msg, int lenmsg, int type, int sender)
 
 		}*/
 
-		printf("got a who is\n");
+		///printf("got a who is\n");
 
 	}
 
@@ -135,13 +136,13 @@ int main(int argc, char argv[])
 
 	int app = p2pstate_newapp(state, "p2pframework");
 
-	/*p2pbroad_init(&broadcaster, state, root_receiver);
+	p2pbroad_init(&broadcaster, state, root_receiver);
 	p2pbroad_start(&broadcaster);
-	while(1){
+	//while(1){
 		p2pbroad_send(&broadcaster);
-		sleep(1);
-	}
-	return 0;*/
+	//	sleep(1);
+	//}
+	//return 0;
 
 
 	if(p2pserv_init(&rootserver, state, root_receiver) != 0){
@@ -179,18 +180,26 @@ int main(int argc, char argv[])
 		if(buffer[strlen(buffer) - 1] == '\n')
 			buffer[strlen(buffer) - 1] = 0;
 
+		if(strlen(buffer) == 0)
+			continue;
 
 		if(strcmp(buffer, "quit") == 0){
 			break;
 		}
 
-		if(strcmp(buffer, "list")){
+		if(strcmp(buffer, "list") == 0){
+			int i;
+			for(i = 0; i < state->nnodes; i++){
+				printf("%d:   %s %s\n", i, state->nodes[i].name, inet_ntoa(state->nodes[i].gateway.s_addr));
+			}
+
+			continue;
 			/* TODO: Print out entries from state->nodes of length state->nnodes */
 			/* Eventually that array will store a list of computers found on the network */
 		}
 
 
-		printf("ip? ");
+		printf("node? ");
 		fflush(stdout);
 
 		fgets(buffer2, 256, stdin);
@@ -202,13 +211,15 @@ int main(int argc, char argv[])
 		bool host = true;
 
 		/* Give the client a preset server connection */
-		if(strlen(buffer2) > 2){
+		if(strlen(buffer2) > 0){
 
 			p2pnode nc;
 
-			inet_aton(buffer2, &nc.gateway.s_addr);
-
-			nid = p2pstate_addnode(state, &nc);
+			nid = atoi(buffer2);
+			if(nid < 0 | nid >= state->nnodes){
+				printf("Invalid node number, type 'list' to see all available ones\n");
+				continue;
+			}
 
 			host = false;
 		}

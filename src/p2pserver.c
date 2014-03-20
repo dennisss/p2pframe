@@ -37,28 +37,11 @@ void *p2pserver_run(void *arg)
 
 	while(p->running){ /* TODO: Make sure this stops properly  */
 
+		sender = -1;
+
 		if(p->proto == P2P_TCP){
 
 			conn = accept(p->sock, &addr, &len);
-
-			/* Add the node to the network list if isn't already on it */
-			bool exists = false;
-			for(i = 0; i < p->state->nnodes; i++){
-				if(p->state->nodes[i].gateway.s_addr == addr.sin_addr.s_addr)
-					exists = true;
-			}
-
-
-			if(!exists){
-				n.gateway.s_addr = addr.sin_addr.s_addr;
-				strcpy(n.name, "Net Computer");
-				sender = p2pstate_addnode(p->state, &n);
-
-				p2pstate_addconnection(p->state, p2pstate_getappid(p->state), sender);
-
-				printf("added computer!\n");
-			}
-
 
 			if(conn == -1){
 				printf("problem!!!\n");
@@ -67,10 +50,20 @@ void *p2pserver_run(void *arg)
 			}
 		}
 		else{
+			/* Because UDP is connection less */
 			conn = p->sock;
 		}
 
-		r = recv(conn, &hdr, sizeof(p2pheader), 0);
+
+
+
+		if(p->proto == P2P_TCP){
+			r = recv(conn, &hdr, sizeof(p2pheader), 0);
+		}
+		else{
+			r = recvfrom(conn, &hdr, sizeof(p2pheader), 0, &addr, &len);
+		}
+
 		if(r == -1){
 			printf("failed!\n");
 		}
@@ -82,6 +75,7 @@ void *p2pserver_run(void *arg)
 		/* TODO: Check the header to determining the size of the payload and how to store it */
 
 		/* Read from the socket */
+		/* TODO: For UDP make sure that the same computer sent the data */
 		r = recv(conn, buffer, hdr.length /* TODO: Make sure that length < sizeof(buffer) */, 0);
 		if(r == -1){
 			/* Close connection, failure */
@@ -103,6 +97,39 @@ void *p2pserver_run(void *arg)
 
 		}
 
+
+		/* Setup the sender based on the address that sent the data */
+		/* TODO: Eventually this process should be restricted to only run on the root framework so that clients can be denied if they aren't first properly registered */
+
+		bool exists = false;
+		for(i = 0; i < p->state->nnodes; i++){
+			if(p->state->nodes[i].gateway.s_addr == addr.sin_addr.s_addr){
+				exists = true;
+				sender = i;
+				break;
+			}
+		}
+
+		int appid = p2pstate_getappid(p->state);
+
+		/* Add the node to the network list if isn't already on it */
+		if(!exists){
+			n.gateway.s_addr = addr.sin_addr.s_addr;
+			strcpy(n.name, "Anonymous Computer");
+			sender = p2pstate_addnode(p->state, &n);
+
+
+
+			//printf("added computer!\n");
+		}
+
+		if(appid != 0){
+				p2pstate_addconnection(p->state, p2pstate_getappid(p->state), sender);
+		}
+
+
+
+		/* Send back the information to the receiver code */
 		p->code(buffer, r, hdr.type, sender);
 
 

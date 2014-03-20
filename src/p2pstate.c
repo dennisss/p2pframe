@@ -163,7 +163,15 @@ int p2pstate_addnode(p2pstate *s, p2pnode *n)
 
 int p2pstate_addconnection(p2pstate *s, int app, int n)
 {
-	int i = s->apps[app].nconnections++;
+	int i;
+
+	/* First make sure that we are not already connected */
+	for(i = 0; i < s->apps[app].nconnections; i++){
+		if(s->apps[app].connections[i] == n)
+			return i;
+	}
+
+	i = s->apps[app].nconnections++;
 	s->apps[app].connections[i] = n;
 	return i;
 }

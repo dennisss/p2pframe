@@ -3,6 +3,7 @@
 #include "../src/p2pnet.h"
 #include "../src/p2pframe.h"
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 p2pserver serv;
 p2pclient client;
@@ -20,12 +21,14 @@ int senderNodeId = NULL;
 
 void receivemsg(char *msg, int lenmsg, int type, int sender)
 {
-	printf("Recv: \n");
-	temp_msg = msg;
-	connected = true;
 	printf("sender received - %d\n", sender);
 	if (senderNodeId == NULL)
 		senderNodeId = sender;
+
+	printf("Recv: \n");
+	temp_msg = msg;
+	connected = true;
+
 	if(strcmp(msg, "Quit") == 0){
 		printf("Exit command...\n");
 		exit(0);
@@ -42,7 +45,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	int app = p2pstate_newapp(state, "Tic Tac Tow");
+	app = p2pstate_newapp(state, "Tic Tac Tow");
 
 	if(p2pserv_init(&serv, state, receivemsg) != 0){
 		printf("Failed to initialize p2p server\n");
@@ -202,6 +205,16 @@ void gameLoop()
 		}
 		for(i = 0; i<9 && winner==0; i++)
 		{
+
+			/*
+			printf("Debug net: %d %d\n", app, state->apps[app].connections[0]);
+			int j;
+			for(j = 0; j < state->nnodes; j++){
+				printf("%d:   %s %s\n", j, state->nodes[j].name, inet_ntoa(state->nodes[j].gateway));
+			}
+			*/
+
+
 			temp_msg=NULL;
 			print_grid(four_X_four);
 			player = i%2 +1;
@@ -226,7 +239,7 @@ void gameLoop()
 				//Wait for stuff back
 				while(temp_msg==NULL)
 				{
-					printf(".");
+					//printf(".");
 				}
 				printf("%s", temp_msg);
 				msg=temp_msg;
