@@ -12,8 +12,9 @@ p2pclient client; /* Will send data to the p2pserver */
 p2pstate *state; /* Required for all applications */
 
 bool connected = false;
+bool host = false;
 
-void receivemsg(char *msg, int lenmsg, int node)
+void receivemsg(char *msg, int lenmsg, int type, int sender)
 {
 	printf("Recv: ");
 
@@ -25,6 +26,10 @@ void receivemsg(char *msg, int lenmsg, int node)
 	}
 
 	printf("%s\n", msg);
+
+	/* The if statement is used to prevent an infinite loop of thankfulness */
+	if(host)
+		p2pclient_send(&client, & state->nodes[ sender ], "thanks!", 8, NULL, NULL);
 
 }
 
@@ -67,7 +72,7 @@ int main(int argc, char *argv[])
 		p2pclient_send(&client, & state->nodes[ state->apps[app].connections[0] ], msg, strlen(msg), NULL, NULL);
 	}
 	else{
-
+		host = true;
 		printf("Waiting for a connection...\n");
 
 		while(!connected){
