@@ -26,21 +26,46 @@ void *p2pserver_run(void *arg)
 {
 	p2pserver *p = (p2pserver *)arg;
 
-	int conn, r;
+	int conn, r, sender, i;
 	struct sockaddr_in addr;
 	socklen_t len = sizeof(struct sockaddr_in);
+
+	p2pnode n;
 
 	p2pheader hdr;
 	char buffer[4096];
 
 	while(p->running){ /* TODO: Make sure this stops properly  */
 
-		conn = accept(p->sock, &addr, &len);
+		if(p->proto == P2P_TCP){
 
-		if(conn == -1){
-			printf("problem!!!\n");
-			/* Failed to connect, the socket was probably closed */
-			break;
+			conn = accept(p->sock, &addr, &len);
+
+			/* Add the node to the network list if isn't already on it */
+			bool exists = false;
+			for(i = 0; i < p->state->nnodes; i++){
+				if(p->state->nodes[i].gateway.s_addr == addr.sin_addr.s_addr)
+					exists = true;
+			}
+
+
+			if(!exists){
+				n.gateway.s_addr = addr.sin_addr.s_addr;
+				strcpy(n.name, "Net Computer");
+				sender = p2pstate_addnode(p->state, &n);
+
+				printf("added computer!\n");
+			}
+
+
+			if(conn == -1){
+				printf("problem!!!\n");
+				/* Failed to connect, the socket was probably closed */
+				break;
+			}
+		}
+		else{
+			conn = p->sock;
 		}
 
 		r = recv(conn, &hdr, sizeof(p2pheader), 0);
@@ -49,10 +74,10 @@ void *p2pserver_run(void *arg)
 		}
 
 		if(r != sizeof(p2pheader)) {
-
+			printf("bad count while receiving\n");
 		}
 
-		/* Check the header to determining the size of the payload and how to store it */
+		/* TODO: Check the header to determining the size of the payload and how to store it */
 
 		/* Read from the socket */
 		r = recv(conn, buffer, hdr.length /* TODO: Make sure that length < sizeof(buffer) */, 0);
@@ -76,12 +101,15 @@ void *p2pserver_run(void *arg)
 
 		}
 
-		p->code(buffer, r, hdr.type);
+		p->code(buffer, r, hdr.type, sender);
 
 
 		/* TODO: If there is a response, send it back here */
 
-		close(conn);
+		/* TODO: Put this check on all the close()'s in this function */
+		if(p->proto == P2P_TCP){
+			close(conn);
+		}
 	}
 
 
@@ -95,6 +123,8 @@ int p2pserv_start(p2pserver *serv){
 /* Starts a server under either the protocol P2P_TCP or P2P_UDP */
 int p2pserv_start2(p2pserver *serv, int proto)
 {
+	serv->proto = proto;
+
 	/* See if already started */
 	if(serv->running) {
 		return 0;
@@ -111,12 +141,15 @@ int p2pserv_start2(p2pserver *serv, int proto)
 	}
 
 	if(serv->sock == -1){
+		printf("Could not create socket\n");
 		return 1;
 	}
 
 #ifdef SO_REUSEPORT
 	int reuse = 1;
 	if(setsockopt(serv->sock, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) == -1){
+		close(serv->sock);
+		printf("Failed to make socket reusable\n");
 		return 1;
 	}
 #endif
@@ -129,12 +162,16 @@ int p2pserv_start2(p2pserver *serv, int proto)
 
 	if(bind(serv->sock, &addr_in, sizeof(addr_in)) < 0){
 		close(serv->sock);
+		printf("Failed to bind\n");
 		return 1;
 	}
 
-	if(listen(serv->sock, SOMAXCONN) < 0) {
-		close(serv->sock);
-		return 1;
+	if(proto == P2P_TCP){
+		if(listen(serv->sock, SOMAXCONN) < 0) {
+			close(serv->sock);
+			printf("Failed to listen\n");
+			return 1;
+		}
 	}
 
 	/* Start a new thread to handle incoming requests */

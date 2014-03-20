@@ -6,7 +6,7 @@
 
 #include <pthread.h>
 
-typedef void (*P2PRECEIVER) (char *msg, int len, int type);
+typedef void (*P2PRECEIVER) (char *msg, int len, int type, int sender);
 
 /* Used for instantiating special servers/clients */
 #define P2P_TCP 1
@@ -29,6 +29,8 @@ typedef struct{
 	int sock;
 
 	bool running;
+
+	int proto;
 
 	/* Add stuff here as needed by the implementation of the p2pserv functions */
 

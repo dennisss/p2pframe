@@ -3,6 +3,7 @@
 #include "p2pnet.h"
 #include "p2pframe.h"
 //#include <ncurses.h>
+#include "p2pbroad.h"
 
 #include <unistd.h>
 
@@ -13,6 +14,7 @@ p2pstate *state;
 p2pserver rootserver;
 p2pclient rootclient;
 
+p2pbc broadcaster;
 
 void startapp(char *path, bool host, int connection)
 {
@@ -64,6 +66,7 @@ void startapp(char *path, bool host, int connection)
 }
 
 /* This can work as the reeiver for both the UDP and TCP servers */
+/* TODO: Make sure that all the arguments passed to the receiver are implemented */
 void root_receiver(char *msg, int lenmsg, int type, int sender)
 {
 
@@ -79,9 +82,25 @@ void root_receiver(char *msg, int lenmsg, int type, int sender)
 	if(type == P2P_MSG_WHO){
 		/* Send back this computer's id */
 
+		if(lenmsg != sizeof(p2pnode)){
+			printf("bad node received\n");
+		}
+
+		p2pnode *n = (p2pnode *)msg;
+
+		/* Ignore messages sent by itself */
+		/*if(uuidcmp(&n->uuid, &state->self.uuid) == 0){
+
+
+		}*/
+
+		printf("got a who is\n");
+
 	}
 
 	if(type == P2P_MSG_ID){
+
+
 		/* Store the ID of another server */
 
 	}
@@ -108,13 +127,22 @@ void root_receiver(char *msg, int lenmsg, int type, int sender)
 
 int main(int argc, char argv[])
 {
+
 	if(p2pinit(&state, true) != 0){
 		printf("Failed to initialize p2p state\n");
 		exit(1);
 	}
 
-
 	int app = p2pstate_newapp(state, "p2pframework");
+
+	/*p2pbroad_init(&broadcaster, state, root_receiver);
+	p2pbroad_start(&broadcaster);
+	while(1){
+		p2pbroad_send(&broadcaster);
+		sleep(1);
+	}
+	return 0;*/
+
 
 	if(p2pserv_init(&rootserver, state, root_receiver) != 0){
 		printf("Failed to initialize p2p server\n");
