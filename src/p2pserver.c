@@ -54,6 +54,8 @@ void *p2pserver_run(void *arg)
 				strcpy(n.name, "Net Computer");
 				sender = p2pstate_addnode(p->state, &n);
 
+				p2pstate_addconnection(p->state, p2pstate_getappid(p->state), sender);
+
 				printf("added computer!\n");
 			}
 

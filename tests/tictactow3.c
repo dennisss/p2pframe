@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	}
 
 
-  	if(state->apps[app].nconnections > 0 /* The connections array will contain any computers that the user requested that the application should connect to. In the case of hosting mode, the array is empty */)
+  	if(state->apps[app].nconnections > 0)
 	{
    		 char *msg = "Start the Game";
    		 printf("Send?: %s\n", msg);
@@ -77,11 +77,11 @@ int main(int argc, char *argv[])
   	  }
   	  printf("Got a connection.\n");
 			currentPlayer = CLIENT;
-			p2pnode nc;
-			inet_aton(temp_msg, &nc.gateway.s_addr);
-			 int nid = p2pstate_addnode(state, &nc);
-			 int app = p2pstate_newapp(state, "Unnamed");
-			 p2pstate_addconnection(state, app, nid);
+			//p2pnode nc;
+			//inet_aton(temp_msg, &nc.gateway.s_addr);
+			 //int nid = p2pstate_addnode(state, &nc);
+			 //int app = p2pstate_newapp(state, "Unnamed");
+			 //p2pstate_addconnection(state, app, nid);
 			gameLoop();
  	 }
 	
