@@ -21,11 +21,11 @@ int senderNodeId = -1;
 
 void receivemsg(char *msg, int lenmsg, int type, int sender)
 {
-	printf("sender received - %d\n", sender);
+//	printf("sender received - %d\n", sender);
 	if (senderNodeId == -1)
 		senderNodeId = sender;
 
-	printf("Recv: \n");
+//	printf("Recv: \n");
 	temp_msg = msg;
 	connected = true;
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   	if(state->apps[app].nconnections > 0)
 	{
    		 char *msg = "Start the Game";
-   		 printf("Send?: %s\n", msg);
+   		// printf("Send?: %s\n", msg);
    		 p2pclient_send(&client, & state->nodes[state->apps[app].connections[0] ], msg, strlen(msg), NULL, NULL);
 	  	currentPlayer = HOST;
 			gameLoop();			
@@ -158,7 +158,14 @@ int didwin(char board[3][3])
 	}
 	
 	//Iterate over diagonals
-	current = board[0][0];
+	//current = board[0][01];
+	char middle = board[1][1];
+	if (board[0][0] == middle && middle == board[2][2])
+		return board[1][1];;
+	
+	if (board[2][0] == middle && middle== board[0][2])
+		return board[1][1];
+	/*
 	for(i=0;i<3;i++)
 	{
 		if(board[i][j] != current)
@@ -183,6 +190,7 @@ int didwin(char board[3][3])
 	{
 		winner = current;
 	}
+	*/
 	return winner;
 }
 
@@ -218,7 +226,7 @@ void gameLoop()
 			temp_msg=NULL;
 			print_grid(four_X_four);
 			player = i%2 +1;
-			printf("Beginning of Loop %d\n", player);
+			//printf("Beginning of Loop %d\n", player);
 			if(player==1 && currentPlayer == HOST)
 			{
 				printf("\n Player %d, please enter the number of the square where you want to place you %c: ",player,'X');
@@ -230,7 +238,7 @@ void gameLoop()
 			{
 				printf("\n Player %d, please enter the number of the square where you want to place %c: ",player,'O');
 				scanf("%s",msg);
-				printf("Sender ID = %d\n", senderNodeId);
+			//	printf("Sender ID = %d\n", senderNodeId);
 				//Send info out
 				p2pclient_send(&client,&state->nodes[senderNodeId],msg,strlen(msg),NULL,NULL);
 			}
@@ -247,7 +255,7 @@ void gameLoop()
 			}
 			//scanf("%d",&lead);
 			lead = atoi(msg);
-			printf("%d", lead);
+		//	printf("%d", lead);
 			lead--;
 			ncols = lead%3;
 			lead = lead - ncols;
@@ -262,7 +270,7 @@ void gameLoop()
 				printf("Place X\n");
 				four_X_four[nrows][ncols] = (player==1) ? 'X' : 'O';
 			}
-			printf("Before Winner\n");
+			//printf("Before Winner\n");
 			winner = didwin(four_X_four);
 		}
 		if(winner != '\0')
@@ -283,7 +291,7 @@ void gameLoop()
 		{
 			printf("No winner this round. Try again.");
 		}
-		printf("End of loop\n");
+	//	printf("End of loop\n");
 	}
 	p2pclient_clean(&client);
 	p2pserv_stop(&serv);

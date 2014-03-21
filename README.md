@@ -19,9 +19,8 @@ Running/Building
 
 * "make bin/testchat" will build a test app that can be used with the framework to do simple chat between a client and server computer. Note: both ends of the program must be running on different computers with different IPs
 
-To run execute "bin/p2pframe" on two computers on the same network. Type "list" on either computer to view a list of available other clients
-Enter the name of the executable to be run (usually either bin/testapp or bin/testchat) and then enter the number of the node that should be connected to from "list". If the app should host a session instead of connect, specify a blank node value.
-
+To run execute "bin/p2pframe" on two computers on the same nework. You need
+to run the application from the folder containing bin to work
 Technical Details
 ----------------------------
 
